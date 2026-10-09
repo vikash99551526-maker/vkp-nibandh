@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nibandh - Kisi bhi vishay par nibandh aur application</title>
+<meta name="description" content="Kisi bhi topic par nibandh aur application likhwao, 50 se 1000 shabdon me, sabhi Bhartiya bhashaon me.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind:wght@400;600&family=Tiro+Devanagari+Hindi&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#fff;--line:#d3e3f7;--margin:#e5484d;--ink:#1b2a5c;--hi:#ffe066;--muted:#5b6a94;--bg:#eef4fc}
+@media (prefers-color-scheme:dark){:root{--paper:#16203d;--line:#27386a;--ink:#e8eeff;--muted:#9fb0dd;--bg:#0e1630;--hi:#8a6d00}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hind","Noto Sans",system-ui,sans-serif;font-size:18px;line-height:32px}
+.wrap{max-width:760px;margin:0 auto;padding:20px 14px 60px}
+h1{font-family:"Tiro Devanagari Hindi","Hind",serif;font-weight:400;font-size:2.4rem;line-height:1.2;margin:18px 0 4px}
+h1 mark{background:var(--hi);color:inherit;padding:0 .2em}
+.sub{color:var(--muted);margin:0 0 18px;line-height:1.5}
+.tabs{display:flex;gap:8px;margin-bottom:12px}
+.tabs button{flex:1;padding:10px;border:2px solid var(--ink);background:transparent;color:var(--ink);font:inherit;font-weight:600;border-radius:8px;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--paper)}
+.search{display:flex;gap:8px;margin-bottom:12px}
+.search input{flex:1;min-width:0;padding:12px 14px;font:inherit;border:2px solid var(--ink);border-radius:8px;background:var(--paper);color:var(--ink)}
+.go{padding:0 20px;border:0;border-radius:8px;background:var(--margin);color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.go:disabled{opacity:.6;cursor:wait}
+.opts{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px}
+.opts label{display:flex;flex-direction:column;font-size:.8rem;color:var(--muted);line-height:1.3;flex:1;min-width:140px}
+.opts select{margin-top:3px;padding:9px;font:inherit;border:2px solid var(--ink);border-radius:8px;background:var(--paper);color:var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:-6px 0 18px}
+.chips button{border:1px dashed var(--muted);background:transparent;color:var(--ink);font:inherit;font-size:.85rem;line-height:1.2;padding:5px 10px;border-radius:99px;cursor:pointer}
+.sheet{position:relative;min-height:220px;background-color:var(--paper);background-image:repeating-linear-gradient(transparent,transparent 31px,var(--line) 31px,var(--line) 32px);border-radius:6px;padding:0 18px 0 62px;box-shadow:0 2px 0 var(--line)}
+.sheet::before{content:"";position:absolute;left:44px;top:0;bottom:0;width:2px;background:var(--margin)}
+#out{white-space:pre-wrap;padding-top:0;margin:0;font-family:"Tiro Devanagari Hindi","Hind",serif;line-height:32px}
+#out.empty{color:var(--muted);font-family:"Hind",sans-serif}
+.err{color:var(--margin)}
+.actions{display:flex;gap:8px;margin-top:12px}
+.actions button{padding:9px 16px;border:2px solid var(--ink);background:transparent;color:var(--ink);font:inherit;border-radius:8px;cursor:pointer}
+.actions[hidden]{display:none}
+footer{margin-top:36px;font-size:.85rem;color:var(--muted);line-height:1.5}
+:focus-visible{outline:3px solid var(--hi);outline-offset:2px}
+@media (max-width:480px){h1{font-size:1.9rem}.sheet{padding-left:50px}.sheet::before{left:34px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <h1>Kuch bhi likho, <mark>nibandh</mark> taiyaar</h1>
+  <p class="sub">Topic likho, shabdon ki sankhya aur bhasha chuno. Baaki kaam hum karenge.</p>
+
+  <div class="tabs" role="group" aria-label="Kya likhna hai">
+    <button id="tEssay" aria-pressed="true">Nibandh</button>
+    <button id="tApp" aria-pressed="false">Application</button>
+  </div>
+
+  <div class="search">
+    <input id="topic" type="text" maxlength="150" placeholder="Jaise: gaay, kutta, aankh, sher" aria-label="Topic">
+    <button class="go" id="go">Likho</button>
+  </div>
+
+  <div class="chips" id="chips"></div>
+
+  <div class="opts">
+    <label>Shabd
+      <select id="words">
+        <option>50</option><option>100</option><option selected>200</option><option>500</option><option>1000</option>
+      </select>
+    </label>
+    <label>Bhasha
+      <select id="lang"></select>
+    </label>
+  </div>
+
+  <section class="sheet" aria-live="polite">
+    <pre id="out" class="empty">Yahan tumhara nibandh dikhega.</pre>
+  </section>
+  <div class="actions" id="actions" hidden>
+    <button id="copy">Copy karo</button>
+    <button id="print">Print / PDF</button>
+  </div>
+
+  <footer>AI se likha gaya text kabhi galat ho sakta hai. Use karne se pehle ek baar padh lo.</footer>
+</main>
+
+<script>
+const LANGS=["Hindi","English","Assamese","Bengali","Bodo","Dogri","Gujarati","Kannada","Kashmiri","Konkani","Maithili","Malayalam","Manipuri (Meitei)","Marathi","Nepali","Odia","Punjabi","Sanskrit","Santali","Sindhi","Tamil","Telugu","Urdu"];
+const IDEAS={essay:["Gaay","Kutta","Sher","Aankh","Insaan","Mera school","Holi","Paryavaran"],app:["Chhutti ke liye","Fees maaf karne ke liye","Bijli vibhag ko shikayat","Transfer certificate ke liye"]};
+let mode="essay";
+const $=id=>document.getElementById(id);
+$("lang").innerHTML=LANGS.map(l=>`<option>${l}</option>`).join("");
+
+function chips(){
+  $("chips").innerHTML=(mode==="essay"?IDEAS.essay:IDEAS.app).map(t=>`<button type="button">${t}</button>`).join("");
+  $("topic").placeholder=mode==="essay"?"Jaise: gaay, kutta, aankh, sher":"Jaise: do din ki chhutti ke liye";
+}
+$("chips").onclick=e=>{if(e.target.tagName==="BUTTON"){$("topic").value=e.target.textContent;$("topic").focus()}};
+function setMode(m){mode=m;$("tEssay").setAttribute("aria-pressed",m==="essay");$("tApp").setAttribute("aria-pressed",m==="app");chips()}
+$("tEssay").onclick=()=>setMode("essay");
+$("tApp").onclick=()=>setMode("app");
+chips();
+
+async function generate(){
+  const topic=$("topic").value.trim();
+  const out=$("out");
+  if(!topic){out.className="err";out.textContent="Pehle topic likho.";return}
+  $("go").disabled=true;$("go").textContent="Likh raha hu...";
+  $("actions").hidden=true;out.className="empty";out.textContent="Thoda ruko...";
+  try{
+    const r=await fetch("/.netlify/functions/essay",{method:"POST",headers:{"content-type":"application/json"},
+      body:JSON.stringify({topic,words:$("words").value,language:$("lang").value,mode:mode==="app"?"application":"essay"})});
+    const d=await r.json();
+    if(!r.ok||!d.text)throw new Error(d.error||"Kuch gadbad ho gayi.");
+    out.className="";out.textContent=d.text;$("actions").hidden=false;
+  }catch(e){out.className="err";out.textContent=e.message+" Dobara koshish karo."}
+  $("go").disabled=false;$("go").textContent="Likho";
+}
+$("go").onclick=generate;
+$("topic").addEventListener("keydown",e=>{if(e.key==="Enter")generate()});
+$("copy").onclick=async()=>{try{await navigator.clipboard.writeText($("out").textContent);$("copy").textContent="Copy ho gaya";setTimeout(()=>$("copy").textContent="Copy karo",1500)}catch(e){}};
+$("print").onclick=()=>window.print();
+</script>
+</body>
+</html>
